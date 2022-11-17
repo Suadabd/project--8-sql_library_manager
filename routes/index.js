@@ -3,12 +3,13 @@ var router = express.Router();
 
 const Book = require('../models').Book;
 
-/// Reduced error handling code when using async/await (no need for try block)
+/* Handler function to wrap each route. */
 function asyncHandler(cb) {
   return async (req, res, next) => {
     try {
       await cb(req, res, next);
     } catch(error){
+      // Forward error to the global error handler
       next(error);
     }
   };
@@ -17,39 +18,95 @@ function asyncHandler(cb) {
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.redirect("/books");
-  next();
 });
 
-
-// GET all books 
+// GET all books (read...)
 router.get('/books', asyncHandler (async (req, res, next) => {
   const books = await Book.findAll(); //will hold all return entries
-  // res.render('index', { title: 'All Books' });
-  res.json(books);   //delete l8tr
+  res.render('index', { title: 'All Books' });
+  // res.json(books);   //delete l8tr
 }));
 
-// * get /books/new -Create new book form
-router.get('/new', asyncHandler (async (req, res) => {
-  res.render('/books/new', { title: 'New Book' });
+//* GET /books/new - Shows the create new book form
+router.get('books/new', asyncHandler (async (req, res) => {
+  res.render('new-book', { title: 'New Book' });
+  // res.json(books); 
 }));
 
-// *  Posts a new book to the database
-router.get('/books/new', asyncHandler (async (req, res) => {
-  res.render('/books/new', { title: 'New Book' });
-}));
 
+
+
+
+
+//*  POSTS a new book to the database (create...)
+
+router.post('/books/new', asyncHandler(async (req, res) => {
+  let book;
+  try {
+    book = await Book.create(req.body);
+    res.redirect(`/books/${book.id}`);
+  } catch (error) {
+    res.render('new-book', {book, errors:error.errors, title: 'New Book' });
+}  
 
 // * GET Shows book detail form
+router.post('books/:id', asyncHandler(async (req, res, next) => {
+  const article = await Book.findByPk(req.params.id);
+  if(book) {
+    res.render("update-book" , { book }); 
+  } else {
+    const err = new Error();
+    err.status=(404);
+    err.message= "Sorry, Page not Found!";
+    
+  }
+}));
+
+// * POST /books/:id - Updates book info in the database
+
+router.post('/books/:id', asyncHandler(async (req, res) => {
+  let book;
+  try {
+  const book = await Book.findByPk(req.params.id);
+  if(book) {
+    await book.update(req.body);
+    res.redirect("/books/" + book.id); 
+  } else {
+    res.sendStatus(404);
+  } 
+  }catch (error) {
+    if(error.name === "SequelizeValidationError") {
+      book = await Book.build(req.body);
+      res.render('update-book', { book, errors:error.errors });
+
+    } else {
+      throw error;
+    }
+
+  }
+}
+
+));
 
 
-// * Post /books/:id - Updates book info in the database
+// * POST /books/:id/delete
 
 
-// * Post /books/:id/delete
+// router.post("/books/:id/delete", asyncHandler (async (req, res, next) => {
 
+  // Find a record---
+//   const oneBook = await Book.findByPk(req.params.id);
+//   if (book) {
+ //   Delete a record---
+//    await book.destroy();
+      // red.redirect('/books');
+// } else {
+//   res.sendStatus(404);
+}
 
+//  
 
-
-
+// }));
+));
 
 module.exports = router;

@@ -31,13 +31,15 @@ app.use('/', indexRouter);
 
 
 //error handling
+
+
 app.use((req, res, next) => {
   const err = new Error('Page Not Found');
   err.status = 404;
   next(err);
 });
 
-
+// Global error Handler
 app.use((err, req, res, next) => {
   if (err) {
     console.log('Global error handler called', err);
