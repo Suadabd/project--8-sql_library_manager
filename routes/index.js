@@ -16,15 +16,15 @@ function asyncHandler(cb) {
 }
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/', function(req, res) {
   res.redirect("/books");
 });
 
 // GET all books (read...)
-router.get('/books', asyncHandler (async (req, res, next) => {
+router.get('/books', asyncHandler (async (req, res) => {
   const books = await Book.findAll(); //will hold all return entries
-  res.render('index', { title: 'All Books' });
-  // res.json(books);   //delete l8tr
+  res.render('index', { title: 'All Books' , books });
+  // res.json(books);   //delete 
 }));
 
 //* GET /books/new - Shows the create new book form
@@ -34,24 +34,20 @@ router.get('books/new', asyncHandler (async (req, res) => {
 }));
 
 
-
-
-
-
 //*  POSTS a new book to the database (create...)
-
 router.post('/books/new', asyncHandler(async (req, res) => {
   let book;
   try {
     book = await Book.create(req.body);
     res.redirect(`/books/${book.id}`);
   } catch (error) {
-    res.render('new-book', {book, errors:error.errors, title: 'New Book' });
-}  
+    res.render('new-book', {book, errors: error.errors, title: 'New Book' });
+}  }));
+
 
 // * GET Shows book detail form
-router.post('books/:id', asyncHandler(async (req, res, next) => {
-  const article = await Book.findByPk(req.params.id);
+router.get('books/:id', asyncHandler(async (req, res, next) => {
+  const book = await Book.findByPk(req.params.id);
   if(book) {
     res.render("update-book" , { book }); 
   } else {
@@ -77,7 +73,7 @@ router.post('/books/:id', asyncHandler(async (req, res) => {
   }catch (error) {
     if(error.name === "SequelizeValidationError") {
       book = await Book.build(req.body);
-      res.render('update-book', { book, errors:error.errors });
+      res.render('update-book', { book, errors:error.errors,  title: 'Book update' });
 
     } else {
       throw error;
@@ -92,21 +88,23 @@ router.post('/books/:id', asyncHandler(async (req, res) => {
 // * POST /books/:id/delete
 
 
-// router.post("/books/:id/delete", asyncHandler (async (req, res, next) => {
+router.post("/books/:id/delete", asyncHandler (async (req, res, next) => {
 
   // Find a record---
-//   const oneBook = await Book.findByPk(req.params.id);
-//   if (book) {
- //   Delete a record---
-//    await book.destroy();
-      // red.redirect('/books');
-// } else {
-//   res.sendStatus(404);
+  const book = await Book.findByPk(req.params.id);
+  if (book) {
+  //  Delete a record---
+   await book.destroy();
+      res.redirect('/books');
+} else {
+  const err = new Error();
+    err.status=(404);
+    err.message= "Sorry, Page not Found!";
+    
 }
-
-//  
-
-// }));
-));
+  
+}
+)
+);
 
 module.exports = router;
