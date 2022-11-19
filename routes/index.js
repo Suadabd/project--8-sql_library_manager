@@ -20,12 +20,15 @@ router.get('/', function(req, res) {
   res.redirect("/books");
 });
 
-// GET all books (read...)
+// GET all books (read...) . books is variable 
 router.get('/books', asyncHandler (async (req, res) => {
   const books = await Book.findAll(); //will hold all return entries
-  // res.render('index', { book, title: 'All Books' });
-  res.json(books);   //delete 
+  console.log(books);
+  res.render('index', { books });   
+  // res.json(books);   //delete 
+  
 }));
+
 
 //* GET /books/new - Shows the create new book form
 router.get('/books/new', asyncHandler (async (req, res) => {
@@ -97,7 +100,7 @@ router.post("/books/:id/delete", asyncHandler (async (req, res, next) => {
   if (book) {
   //  Delete a record---
    await book.destroy();
-      res.redirect('/books/');
+      res.redirect('/books');
 } else {
   const err = new Error();
     err.status=(404);
