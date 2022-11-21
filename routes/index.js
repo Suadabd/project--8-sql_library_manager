@@ -61,7 +61,7 @@ router.get('/books/:id', asyncHandler(async (req, res, next) => {
     const err = new Error();
     err.status=(404);
     err.message= "Sorry, Page not Found!";
-    
+    next(err);
   }
 }));
 
